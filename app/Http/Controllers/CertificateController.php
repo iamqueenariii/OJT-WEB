@@ -48,27 +48,52 @@ class CertificateController extends Controller
             $font->size($fontSize);
         });
 
-        //middle part paragraph
-        // Add additional text as needed
+        // //middle part paragraph
         $imageWidth = $image->getWidth(); // Get the width of the image
 
         // Estimate the text width based on the number of characters and font size
-        $text = "             for successfully completed the {$certificate->type} at the Local\nGovernment Unit of Manolo Fortich under {$certificate->office_name} \n                           for {$certificate->hrs} hours from " .
+        $text = "for successfully completed the {$certificate->type} at the Local \nGovernment Unit of Manolo Fortich under {$certificate->office_name} \nfor {$certificate->hrs} hours from " .
             (date('FY', strtotime($certificate->applicant->started_date)) == date('FY', strtotime($certificate->dateFinished)) ?
                 date('F j', strtotime($certificate->applicant->started_date)) . ' - ' . date('j, Y', strtotime($certificate->dateFinished)) : (date('Y', strtotime($certificate->applicant->started_date)) == date('Y', strtotime($certificate->dateFinished)) ?
                     date('F j', strtotime($certificate->applicant->started_date)) . ' - ' . date('F j, Y.', strtotime($certificate->dateFinished)) :
                     ''));
 
-        $textWidth = strlen($text) * 5;
-        $xCoordinate = 100;
+        // Estimate the font size and calculate the bounding box of each line of text
+        $fontSize = 25;
+        $fontPath = public_path('storage/font/arial.ttf');
+        $lines = explode("\n", $text);
 
-        // Add the text to the image with center alignment
-        $image->text($text, $xCoordinate, 470, function ($font) {
-            $font->file(public_path('storage/font/arial.ttf')); // Set the path to your selected font file
-            $font->size(25); // Set the font size
-            $font->align('bottom');
-        });
+        // Calculate the maximum text width among all lines
+        $maxTextWidth = 0;
+        foreach ($lines as $line) {
+            $boundingBox = imagettfbbox($fontSize, 39, $fontPath, $line);
+            $lineWidth = $boundingBox[2] - $boundingBox[0];
+            if ($lineWidth > $maxTextWidth) {
+                $maxTextWidth = $lineWidth;
+            }
+        }
 
+        // Calculate the x-coordinate for center alignment of each line
+        $xCoordinates = [];
+        foreach ($lines as $line) {
+            $boundingBox = imagettfbbox($fontSize, 39, $fontPath, $line);
+            $lineWidth = $boundingBox[2] - $boundingBox[0];
+            $xCoordinate = ($imageWidth - $lineWidth) / 2;
+            $xCoordinates[] = $xCoordinate;
+        }
+
+        // Calculate the y-coordinate (vertical position) for the text
+        $yCoordinate = 470;
+
+        // Add each line of text to the image with center alignment
+        foreach ($lines as $index => $line) {
+            $xCoordinate = $xCoordinates[$index];
+            $image->text($line, $xCoordinate, $yCoordinate, function ($font) use ($fontPath, $fontSize) {
+                $font->file($fontPath); // Set the path to your selected font file
+                $font->size($fontSize); // Set the font size
+            });
+            $yCoordinate += $fontSize * 1.5; // Adjust y-coordinate for next line spacing
+        }
 
         //last part
         // Add additional text
@@ -96,7 +121,8 @@ class CertificateController extends Controller
 
         // Save the image with the specified file name
         $image->save(storage_path($imagePath));
+        return response()->download(storage_path($imagePath), $fileName);
 
-        return view('reports.certificate', compact('certificate'));
+        // return view('reports.certificate', compact('certificate'));
     }
 }
