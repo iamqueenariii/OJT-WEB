@@ -65,7 +65,7 @@
         <div class="container">
             <img style="width: 100%;" src="{{ asset('storage/template/template1.jpg') }}" alt="">
             <div class="text-center applicant-name">
-                <span class="monotype text-100"> {{ $certificate->fullname }}</span>
+                <span class="text-100" style="font-family: Arial;">{{ $certificate->fullname }}</span>
                 <p class="text-40 " style="padding-left: 10%; width: 80%;">
                     for successfully completing the {{ $certificate->type }} at the Local
                     Government Unit of Manolo Fortich under {{ $certificate->office_name }} for {{ $certificate->hrs }}

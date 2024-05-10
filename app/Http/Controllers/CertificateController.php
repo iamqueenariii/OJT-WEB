@@ -6,11 +6,13 @@ use App\Models\Certificate;
 use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class CertificateController extends Controller
 {
 
     public $font;
+    public $xCoordinate;
 
     public function saveAsJpg($certificate_id)
     {
@@ -20,32 +22,33 @@ class CertificateController extends Controller
         // Example: Generate certificate image (JPG) using Intervention Image
         $image = Image::make(public_path('storage/template/template1.jpg'));
 
-        // Add certificate content to the image
-        // $image->text($certificate->applicant->fullname(), 85, 400, function ($font) {
-        //     $font->file(public_path('storage/font/arial_bold.ttf')); // Set the path to your selected font file
-        //     $font->size(55); // Increase the font size as needed
-
-        // });
-        
+        //fullname
         $imageWidth = $image->getWidth(); // Get the width of the image
 
-        // Calculate the text width
-        $text = $certificate->applicant->fullname();
-        $textWidth = strlen($text) * 10; // Estimate text width (adjust the constant as needed)
+        // Retrieve the fullname from the certificate
+        $fullname = $certificate->applicant->fullname();
+
+        // Estimate the font size and calculate the bounding box of the text
+        $fontSize = 90; // Set the font size as needed
+        $fontPath = public_path('storage/font/MTCORSVA.ttf'); // Set the path to your selected font file
+        $boundingBox = imagettfbbox($fontSize, 40, $fontPath, $fullname);
+
+        // Calculate the text width based on the bounding box
+        $textWidth = $boundingBox[2] - $boundingBox[0];
 
         // Calculate the x-coordinate for center alignment
-        $xCoordinate = ($imageWidth - $textWidth) / 10;
+        $xCoordinate = ($imageWidth - $textWidth) / 2;
 
-        // Add the text to the image with fixed position and center alignment
-        $image->text($text, $xCoordinate, 400, function ($font) {
-            $font->file(public_path('storage/font/arial_bold.ttf')); // Set the path to your selected font file
-            $font->size(55); // Set the font size as needed
+        // Calculate the y-coordinate (vertical position) for the text
+        $yCoordinate = 400;
+
+        // Add the text to the image with center alignment
+        $image->text($fullname, $xCoordinate, $yCoordinate, function ($font) use ($fontPath, $fontSize) {
+            $font->file($fontPath);
+            $font->size($fontSize);
         });
 
-
-
-
-
+        //middle part paragraph
         // Add additional text as needed
         $imageWidth = $image->getWidth(); // Get the width of the image
 
@@ -56,10 +59,7 @@ class CertificateController extends Controller
                     date('F j', strtotime($certificate->applicant->started_date)) . ' - ' . date('F j, Y.', strtotime($certificate->dateFinished)) :
                     ''));
 
-        $textWidth = strlen($text) * 5; // Assume an average width per character, adjust as needed
-
-        // Calculate the x-coordinate to center-align the text
-        // $xCoordinate = ($imageWidth - $textWidth) /2;
+        $textWidth = strlen($text) * 5;
         $xCoordinate = 100;
 
         // Add the text to the image with center alignment
@@ -70,24 +70,33 @@ class CertificateController extends Controller
         });
 
 
-
-
-
+        //last part
         // Add additional text
         $image->text('Given this ' . Carbon::parse($certificate->dateIssued)->format('jS') . ' of ' . ucwords(date('F Y', strtotime($certificate->dateIssued))) . ' at Manolo Fortich, Bukidnon.', 230, 610, function ($font) {
             $font->file(public_path('storage/font/arial.ttf')); // Set the path to your selected font file
             $font->size(25); // Increase the font size as needed
-            // $font->align('center');
-            // $font->display('flex');
-
         });;
 
 
         // Save the image as JPG
-        $imagePath = 'app/public/certificates/' . time() . '.jpg';
+
+        $fullName = $certificate->applicant->fullname();
+
+        // Sanitize the full name to remove any special characters
+        $sanitizedFullName = Str::slug($fullName, '_');
+
+        // Define the directory where you want to save the image
+        $directory = 'app/public/certificates/';
+
+        // Define the file name using the sanitized full name and current date/time
+        $fileName = $sanitizedFullName . '_' . date('Ymd') . '.jpg';
+
+        // Concatenate the directory path and the file name
+        $imagePath = $directory . $fileName;
+
+        // Save the image with the specified file name
         $image->save(storage_path($imagePath));
 
-        // Optionally, you can return the image path or any other response
-        return response()->json(['image_path' => $imagePath]);
+        return view('reports.certificate', compact('certificate'));
     }
 }

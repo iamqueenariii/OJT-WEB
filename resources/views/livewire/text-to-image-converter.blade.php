@@ -1,24 +1,10 @@
-<div>
-    <!-- Input field and button to generate image -->
-    <input type="text" wire:model="textInput" placeholder="Enter your text">
-    <button wire:click="generateImage">Convert to Image</button>
+{{-- resources/views/livewire/generate-certificate.blade.php --}}
 
-    <!-- Display the generated image -->
-    @if($image)
-        <img src="{{ $image }}" alt="Converted Image">
-        <!-- Button to trigger download -->
-        <button onclick="downloadImage('{{ $image }}')">Download Image</button>
+<div>
+    <button wire:click="generateCertificate({{ $certificate_id }})">Generate Certificate</button>
+
+    @if($certificate)
+        {{-- Display the generated certificate image --}}
+        <img src="{{ asset($certificate->image_path) }}" alt="Generated Certificate">
     @endif
 </div>
-
-<script>
-    function downloadImage(imageUrl) {
-        // Create a temporary anchor element
-        var a = document.createElement("a");
-        a.href = imageUrl;
-        a.download = "image.png"; // Set the filename for download
-        document.body.appendChild(a);
-        a.click(); // Trigger the click event to start download
-        document.body.removeChild(a); // Clean up
-    }
-</script>

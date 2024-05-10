@@ -147,7 +147,6 @@ class Certificates extends Component
         }
 
         return redirect()->route('save-as-jpg', ['certificate_id' => $certificate_id]);
-
-        // Handle the response as needed
     }
+
 }

@@ -50,3 +50,6 @@ Route::get('print-cert/{certificate_id}', [PrintController::class, 'PrintCert'])
 Route::get('save-as-jpg/{certificate_id}', [CertificateController::class, 'saveAsJpg'])->name('save-as-jpg');
 
 
+
+
+
