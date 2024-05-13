@@ -47,9 +47,7 @@ Route::get('print-certs/{certificate_ids}', [PrintController::class, 'PrintCerts
 Route::get('print-cert/{certificate_id}', [PrintController::class, 'PrintCert'])->name('print-certificate');
 });
 
-Route::get('save-as-jpg/{certificate_id}', [CertificateController::class, 'saveAsJpg'])->name('save-as-jpg');
+Route::get('save-cert/{certificate_id}', [CertificateController::class, 'saveAsJpg'])->name('save-as-jpg');
 
-
-
-
+Route::get('save-certs/{certificate_ids}', [CertificateController::class, 'saveAsJpgs'])->name('save-as-jpgs');
 

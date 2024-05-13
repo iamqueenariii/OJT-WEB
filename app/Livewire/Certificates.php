@@ -25,12 +25,6 @@ class Certificates extends Component
         $this->dateIssuedList = Certificate::pluck('dateIssued')->toArray();
     }
 
-    public function print()
-    {
-        $certificate_ids = json_encode(array_keys($this->selected_cert, true));
-        return redirect()->route('print-certificates', ['certificate_ids' => $certificate_ids]);
-    }
-
     public function openModal()
     {
         $this->certEdit = true;
@@ -138,6 +132,11 @@ class Certificates extends Component
         Certificate::where('id', '=', $this->certificate_id)->update($data);
         $this->closeModal();
     }
+    public function print()
+    {
+        $certificate_ids = json_encode(array_keys($this->selected_cert, true));
+        return redirect()->route('print-certificates', ['certificate_ids' => $certificate_ids]);
+    }
 
     public function saveCertificate($certificate_id)
     {
@@ -145,8 +144,13 @@ class Certificates extends Component
         if (!$certificate_id) {
             return; // Return early if certificate_id is not set
         }
-
         return redirect()->route('save-as-jpg', ['certificate_id' => $certificate_id]);
+    }
+
+    public function saveCertificates()
+    {
+        $certificate_ids = json_encode(array_keys($this->selected_cert, true));
+        return redirect()->route('save-as-jpgs', ['certificate_ids' => $certificate_ids]);
     }
 
 }

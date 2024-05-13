@@ -17,6 +17,9 @@
                 <button wire:click="print()"
                     class="bg-blue-900 hover:bg-blue-700 text-white font-bold py-1 px-1 rounded my-3"> PRINT
                 </button>
+                <button wire:click="saveCertificates()"
+                    class="bg-green-600 text-white font-bold py-1 px-1 rounded my-3"> SAVE
+                </button>
 
                 <input wire:model.live="searchToken" id="searchToken"
                     class="border-2 rounded-lg border-yellow-900 text-black-700 mr-3 py-1 px-2 leading-tight focus:outline-none"

@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use ZipArchive;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
+
 
 class CertificateController extends Controller
 {
@@ -102,9 +106,7 @@ class CertificateController extends Controller
             $font->size(25); // Increase the font size as needed
         });;
 
-
         // Save the image as JPG
-
         $fullName = $certificate->applicant->fullname();
 
         // Sanitize the full name to remove any special characters
@@ -124,5 +126,91 @@ class CertificateController extends Controller
         return response()->download(storage_path($imagePath), $fileName);
 
         // return view('reports.certificate', compact('certificate'));
+    }
+
+    public function saveAsJpgs($certificate_ids)
+    {
+        // Check if $certificate_ids is a JSON string
+        if (is_string($certificate_ids)) {
+            // Decode the JSON string to get the array of certificate IDs
+            $ids = json_decode($certificate_ids);
+
+            // Check if JSON decoding was successful
+            if ($ids === null && json_last_error() !== JSON_ERROR_NONE) {
+                // Handle the case where JSON decoding failed
+                return response()->json(['error' => 'Invalid JSON format for certificate IDs'], 400);
+            }
+        } elseif (is_array($certificate_ids)) {
+            // If $certificate_ids is already an array, use it directly
+            $ids = $certificate_ids;
+        } else {
+            // Handle the case where $certificate_ids is neither a JSON string nor an array
+            return response()->json(['error' => 'Certificate IDs must be provided as an array or a JSON string'], 400);
+        }
+
+        // Initialize a new ZipArchive instance
+        $zip = new ZipArchive;
+
+        // Create a unique temporary file name for the zip archive
+        $fileName = 'certificates_' . uniqid() . '.zip';
+
+        // Define the directory where you want to save the temporary ZIP file
+        $directory = 'app/public/certificates/';
+
+        // Make sure the temporary directory exists, if not, create it
+        if (!file_exists($directory) && !mkdir($directory, 0755, true)) {
+            return response()->json(['error' => 'Failed to create directory for saving ZIP file'], 500);
+        }
+
+        // Concatenate the directory path and the file name to get the full temporary file path for the zip archive
+        $zipFilePath = $directory . DIRECTORY_SEPARATOR . $fileName;
+
+        // Open the temporary file for writing
+        if ($zip->open($zipFilePath, ZipArchive::CREATE) !== true) {
+            // Handle the case where zip archive creation failed
+            return response()->json(['error' => 'Failed to create zip archive'], 500);
+        }
+
+        // Iterate through each certificate ID
+        foreach ($ids as $certificate_id) {
+            // Retrieve certificate data based on the ID
+            $certificate = Certificate::find($certificate_id);
+
+            // Ensure the certificate exists
+            if (!$certificate) {
+                return response()->json(['error' => "Certificate not found for ID: $certificate_ids"], 404);
+            }
+
+            // Generate certificate image (JPG) using the saveAsJpg function
+            $imagePath = $this->saveAsJpg($certificate_id);
+
+            // Ensure the image path is valid
+            if (!$imagePath) {
+                return response()->json(['error' => "Failed to generate image for certificate ID: $certificate_ids"], 500);
+            }
+
+            // Add the image file to the zip archive with a unique name
+            $imageFilePath = storage_path('app/' . $imagePath);
+            $imageName = $certificate->applicant->fullname() . '.jpg';
+
+            // Check if the image file exists
+            if (file_exists($imageFilePath)) {
+                $zip->addFile($imageFilePath, $imageName);
+            } else {
+                // Handle the case where the image file does not exist
+                return response()->json(['error' => "Image file not found for certificate ID: $certificate_ids"], 404);
+            }
+        }
+
+        // Close the zip archive
+        $zip->close();
+
+        // Check if the ZIP file was created successfully
+        if (!file_exists($zipFilePath)) {
+            return response()->json(['error' => 'Failed to create ZIP file'], 500);
+        }
+
+        // Return a download response for the ZIP archive
+        return response()->download($zipFilePath, $fileName)->deleteFileAfterSend(true);
     }
 }
