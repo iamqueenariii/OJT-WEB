@@ -152,5 +152,4 @@ class Certificates extends Component
         $certificate_ids = json_encode(array_keys($this->selected_cert, true));
         return redirect()->route('save-as-jpgs', ['certificate_ids' => $certificate_ids]);
     }
-
 }
