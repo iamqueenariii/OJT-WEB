@@ -109,6 +109,8 @@ class Certificates extends Component
             ->paginate(10);
 
 
+            
+
         return view('livewire.certificates', compact('certificates'))->layout('layouts.admin');
     }
 
