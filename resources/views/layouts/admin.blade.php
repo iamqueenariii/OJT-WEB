@@ -43,70 +43,58 @@
                             class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">OJT
                             Web</span>
                     </a>
-                    <div class="flex items-center">
-                        <div class="flex items-center ms-3">
-                            <div>
-                                @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-                                    <button type="button"
-                                        class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                                        aria-expanded="false" data-dropdown-toggle="dropdown-user">
-                                        <span class="sr-only">Open user menu</span>
-                                        <img class="w-8 h-8 rounded-full"
-                                            src="{{ Auth::user()->profile_photo_url ? Auth::user()->profile_photo_url : asset('storage/profile-photos/' . Auth::user()->profile_photo_path) }}"
-                                            alt="user photo">
-                                    </button>
-                                @else
-                                    <span class="inline-flex rounded-md">
-                                        <button type="button"
-                                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50 transition ease-in-out duration-150">
-                                            {{ Auth::user()->name }}
-
-                                            <svg class="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                                fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                                            </svg>
-                                        </button>
-                                    </span>
-                                @endif
-                                {{-- <button type="button"
+                </div>
+                <div class="relative flex items-center ml-auto" x-data="{ open: false }">
+                    <div>
+                        @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
+                            <button x-on:click="open = ! open" type="button"
                                 class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                                aria-expanded="false" data-dropdown-toggle="dropdown-user">
+                                aria-expanded="false">
                                 <span class="sr-only">Open user menu</span>
                                 <img class="w-8 h-8 rounded-full"
-                                    src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                                    src="{{ Auth::user()->profile_photo_url ? Auth::user()->profile_photo_url : asset('storage/profile-photos/' . Auth::user()->profile_photo_path) }}"
                                     alt="user photo">
-                            </button> --}}
-                            </div>
-                            <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600"
-                                id="dropdown-user">
-                                <div class="px-4 py-3" role="none">
-                                    <p class="text-sm text-gray-900 dark:text-white" role="none">
-                                        {{ Auth::user()->name }}
-                                    </p>
-                                    <p class="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
-                                        role="none">
-                                        {{ Auth::user()->email }}
-                                    </p>
-                                </div>
-                                <ul class="py-1" role="none">
-                                    <li>
-                                        <x-dropdown-link href="{{ route('profile.show') }}">
-                                            {{ __('Profile') }}
-                                        </x-dropdown-link>
-                                        <form method="POST" action="{{ route('logout') }}" x-data>
-                                            @csrf
+                            </button>
+                        @else
+                            <span class="inline-flex rounded-md">
+                                <button x-on:click="open = ! open" type="button"
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50 transition ease-in-out duration-150">
+                                    {{ Auth::user()->name }}
 
-                                            <x-dropdown-link href="{{ route('logout') }}"
-                                                @click.prevent="$root.submit();">
-                                                {{ __('Log Out') }}
-                                            </x-dropdown-link>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
+                                    <svg class="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                </button>
+                            </span>
+                        @endif
+                    </div>
+                    <div x-show="open" @click.outside="open = false"
+                        class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden z-20"
+                        id="dropdown-user" style="top: 100%;">
+                        <div class="px-4 py-3" role="none">
+                            <p class="text-sm text-gray-900 dark:text-white" role="none">
+                                {{ Auth::user()->name }}
+                            </p>
+                            <p class="text-sm font-medium text-gray-900 truncate dark:text-gray-300" role="none">
+                                {{ Auth::user()->email }}
+                            </p>
                         </div>
+                        <ul class="py-1" role="none">
+                            <li>
+                                <x-dropdown-link href="{{ route('profile.show') }}">
+                                    {{ __('Profile') }}
+                                </x-dropdown-link>
+                                <form method="POST" action="{{ route('logout') }}" x-data>
+                                    @csrf
+
+                                    <x-dropdown-link href="{{ route('logout') }}" @click.prevent="$root.submit();">
+                                        {{ __('Log Out') }}
+                                    </x-dropdown-link>
+                                </form>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
