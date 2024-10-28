@@ -7,9 +7,12 @@ use App\Models\Certificate;
 use App\Models\Office;
 use Illuminate\Support\Facades\Http;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Certificates extends Component
 {
+
+    use WithPagination;
 
     public $certificate, $applicant_id, $fullname, $dateFinished, $dateIssued, $hrs, $office_name, $type, $certEdit, $certificate_id, $office_id, $selected_cert = [], $searchToken, $offices, $selectAll, $year;
 
@@ -107,9 +110,6 @@ class Certificates extends Component
                 return $certificate->whereYear('dateIssued', $this->year);
             })
             ->paginate(10);
-
-
-            
 
         return view('livewire.certificates', compact('certificates'))->layout('layouts.admin');
     }
